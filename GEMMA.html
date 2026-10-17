@@ -1,0 +1,1262 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GemmaSearch - Next-Gen Multimodal AI Search (Gemma 4 Engine)</title>
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        darkbg: '#030712',
+                        darkcard: 'rgba(15, 23, 42, 0.75)',
+                        darkborder: 'rgba(255, 255, 255, 0.12)',
+                        gemma: {
+                            400: '#a5b4fc',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            violet: '#c084fc',
+                            pink: '#f472b6',
+                            cyan: '#22d3ee',
+                            emerald: '#34d399',
+                            amber: '#fbbf24'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Outfit', 'Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace']
+                    },
+                    animation: {
+                        'pulse-glow': 'pulseGlow 4s infinite ease-in-out',
+                        'float': 'float 6s infinite ease-in-out',
+                        'spin-slow': 'spin 16s linear infinite',
+                        'gradient-text': 'gradientText 6s ease infinite',
+                        'shimmer-fast': 'shimmer 1.8s infinite linear',
+                        'wave-equalizer': 'waveform 0.8s ease-in-out infinite alternate',
+                        'border-glow': 'borderGlow 3s infinite alternate'
+                    },
+                    keyframes: {
+                        pulseGlow: {
+                            '0%, 100%': { opacity: '0.3', filter: 'blur(30px)', transform: 'scale(1)' },
+                            '50%': { opacity: '0.7', filter: 'blur(45px)', transform: 'scale(1.1)' }
+                        },
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0px)' },
+                            '50%': { transform: 'translateY(-10px)' }
+                        },
+                        gradientText: {
+                            '0%, 100%': { 'background-size': '200% 200%', 'background-position': 'left center' },
+                            '50%': { 'background-size': '200% 200%', 'background-position': 'right center' }
+                        },
+                        shimmer: {
+                            '0%': { backgroundPosition: '-200% 0' },
+                            '100%': { backgroundPosition: '200% 0' }
+                        },
+                        waveform: {
+                            '0%': { height: '6px' },
+                            '100%': { height: '28px' }
+                        },
+                        borderGlow: {
+                            '0%': { borderColor: 'rgba(99, 102, 241, 0.4)', boxShadow: '0 0 15px rgba(99, 102, 241, 0.2)' },
+                            '100%': { borderColor: 'rgba(192, 132, 252, 0.7)', boxShadow: '0 0 25px rgba(192, 132, 252, 0.4)' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- FontAwesome & Google Fonts -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Outfit', 'Inter', sans-serif;
+            background-color: #030712;
+            overflow-x: hidden;
+            transition: background-color 0.4s ease, color 0.4s ease;
+        }
+
+        /* Light Theme Overrides */
+        .light body {
+            background-color: #f8fafc;
+            color: #0f172a;
+        }
+        .light .glass-panel {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.05);
+        }
+        .light .glass-input {
+            background: rgba(241, 245, 249, 0.95);
+            border: 1px solid rgba(0, 0, 0, 0.12);
+            color: #0f172a;
+        }
+        .light .glass-input textarea {
+            color: #0f172a !important;
+        }
+        .light .brand-heading {
+            background: linear-gradient(135deg, #4f46e5 0%, #9333ea 50%, #db2777 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Dark Glassmorphism Styles */
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.5);
+        }
+
+        .glass-input {
+            background: rgba(8, 14, 27, 0.85);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        /* Animated Shimmer Text */
+        .brand-heading {
+            background: linear-gradient(135deg, #ffffff 0%, #a5b4fc 25%, #c084fc 50%, #f472b6 75%, #ffffff 100%);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: gradientText 6s ease infinite;
+        }
+
+        /* Glow Borders */
+        .glow-border {
+            position: relative;
+        }
+        .glow-border::before {
+            content: '';
+            position: absolute;
+            inset: -2px;
+            background: linear-gradient(90deg, #6366f1, #c084fc, #f472b6, #22d3ee, #6366f1);
+            background-size: 300% 100%;
+            border-radius: inherit;
+            z-index: -1;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+        .glow-border:hover::before, .glow-border:focus-within::before {
+            opacity: 1;
+            animation: shimmer 3s linear infinite;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(3, 7, 18, 0.6);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(99, 102, 241, 0.4);
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(192, 132, 252, 0.8);
+        }
+
+        /* Dynamic Popover Citation Tooltip */
+        .citation-tag {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 20px;
+            height: 20px;
+            font-size: 11px;
+            font-weight: 800;
+            color: #22d3ee;
+            background: rgba(34, 211, 238, 0.15);
+            border: 1px solid rgba(34, 211, 238, 0.3);
+            border-radius: 6px;
+            margin: 0 3px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            vertical-align: baseline;
+        }
+        .citation-tag:hover {
+            background: #22d3ee;
+            color: #030712;
+            transform: translateY(-2px) scale(1.1);
+            box-shadow: 0 0 10px rgba(34, 211, 238, 0.6);
+        }
+
+        /* Micro Pulse Indicator */
+        .status-dot {
+            position: relative;
+        }
+        .status-dot::after {
+            content: '';
+            position: absolute;
+            inset: -3px;
+            border-radius: 9999px;
+            background: inherit;
+            opacity: 0.6;
+            animation: ping 1.8s cubic-bezier(0, 0, 0.2, 1) infinite;
+        }
+    </style>
+</head>
+<body class="text-slate-100 min-h-screen flex flex-col transition-colors duration-300 relative selection:bg-gemma-500 selection:text-white">
+
+    <!-- Ambient Ambient Animated Particle & Mesh Glow Background -->
+    <div class="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+        <div class="absolute -top-40 -left-40 w-[30rem] h-[30rem] bg-gemma-600/25 rounded-full animate-pulse-glow"></div>
+        <div class="absolute top-1/3 -right-40 w-[35rem] h-[35rem] bg-gemma-violet/20 rounded-full animate-pulse-glow" style="animation-delay: 1.5s;"></div>
+        <div class="absolute -bottom-40 left-1/3 w-[40rem] h-[40rem] bg-gemma-cyan/15 rounded-full animate-pulse-glow" style="animation-delay: 3s;"></div>
+        <canvas id="ambientBgCanvas" class="absolute inset-0 w-full h-full opacity-50"></canvas>
+    </div>
+
+    <!-- Header Navigation -->
+    <header class="sticky top-0 z-40 backdrop-blur-2xl bg-darkbg/80 border-b border-white/10 px-4 lg:px-8 py-3 flex items-center justify-between transition-all">
+        <div class="flex items-center space-x-4">
+            <!-- Brand Logo & Larger Heading -->
+            <div class="flex items-center space-x-3.5 cursor-pointer" onclick="window.location.reload()">
+                <div class="relative w-12 h-12 rounded-2xl bg-gradient-to-br from-gemma-500 via-gemma-violet to-gemma-pink p-[1.5px] shadow-xl shadow-gemma-500/30 group">
+                    <div class="w-full h-full bg-darkbg rounded-[14px] flex items-center justify-center relative overflow-hidden">
+                        <i class="fa-solid fa-brain text-transparent bg-clip-text bg-gradient-to-r from-gemma-400 via-gemma-violet to-gemma-pink text-2xl group-hover:scale-110 transition-transform duration-300"></i>
+                        <div class="absolute inset-0 bg-gemma-500/20 animate-spin-slow opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    </div>
+                </div>
+                <div>
+                    <div class="flex items-center space-x-2.5">
+                        <h1 class="brand-heading font-black text-2xl sm:text-3xl tracking-tight leading-none">GemmaSearch</h1>
+                        <span class="text-[10px] font-black tracking-widest px-2 py-0.5 rounded-md bg-gemma-violet/25 text-gemma-violet border border-gemma-violet/40 uppercase shadow-sm">G4 MOE</span>
+                    </div>
+                    <p class="text-xs text-slate-400 font-medium tracking-wide mt-0.5">Open-Source Multimodal Neural Search Engine</p>
+                </div>
+            </div>
+
+            <!-- Live Status Badges -->
+            <div class="hidden xl:flex items-center space-x-2.5 pl-5 border-l border-white/10 text-xs">
+                <span class="flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-semibold">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 status-dot"></span> Gemma 4 Online
+                </span>
+                <span class="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/5 text-slate-300 border border-white/10 font-medium">
+                    <i class="fa-solid fa-bolt text-amber-400"></i> Latency: 12ms
+                </span>
+            </div>
+        </div>
+
+        <!-- Navigation Links -->
+        <nav class="hidden md:flex items-center space-x-1.5 glass-panel px-3 py-1.5 rounded-full text-xs font-semibold border border-white/10 shadow-lg">
+            <a href="#" class="px-4 py-1.5 rounded-full bg-gradient-to-r from-gemma-600 to-gemma-violet text-white shadow-md shadow-gemma-600/30 flex items-center gap-2 transition-all">
+                <i class="fa-solid fa-compass"></i> Studio Workspace
+            </a>
+            <a href="#" onclick="openLibraryModal()" class="px-3.5 py-1.5 rounded-full text-slate-300 hover:text-white hover:bg-white/10 transition-all flex items-center gap-1.5">
+                <i class="fa-solid fa-bookmark text-gemma-violet"></i> Knowledge Base
+            </a>
+            <a href="https://github.com" target="_blank" class="px-3.5 py-1.5 rounded-full text-slate-300 hover:text-white hover:bg-white/10 transition-all flex items-center gap-1.5">
+                <i class="fa-brands fa-github text-sm"></i> Open Source
+            </a>
+        </nav>
+
+        <!-- Right Controls -->
+        <div class="flex items-center space-x-2.5">
+            <!-- Sound FX Toggle -->
+            <button id="soundToggleBtn" onclick="toggleSound()" class="p-2.5 rounded-xl glass-panel text-slate-300 hover:text-white hover:bg-white/10 transition-all border border-white/10" title="Toggle Sound FX">
+                <i id="soundIcon" class="fa-solid fa-volume-high text-gemma-cyan"></i>
+            </button>
+            <button onclick="openSettingsModal()" class="p-2.5 rounded-xl glass-panel text-slate-300 hover:text-white hover:bg-white/10 transition-all border border-white/10" title="Engine Settings">
+                <i class="fa-solid fa-sliders"></i>
+            </button>
+            <button id="themeToggleBtn" class="p-2.5 rounded-xl glass-panel text-slate-300 hover:text-white hover:bg-white/10 transition-all border border-white/10" title="Toggle Theme">
+                <i id="themeIcon" class="fa-solid fa-moon text-amber-300"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8 max-w-7xl relative z-10 flex flex-col space-y-8">
+
+        <!-- Hero Banner Header -->
+        <section class="text-center space-y-3 pt-2 pb-1">
+            <h2 class="text-3xl sm:text-5xl font-black tracking-tight text-white leading-tight">
+                Synthesize Knowledge with <span class="brand-heading">Gemma 4</span> Multimodal Intelligence
+            </h2>
+            <p class="text-slate-400 text-sm sm:text-base max-w-2xl mx-auto font-medium">
+                Deep web indexing, document OCR parsing, and visual reasoning combined into a single open-source AI engine.
+            </p>
+        </section>
+
+        <!-- Search Studio Card Workspace -->
+        <section class="glass-panel rounded-3xl p-6 sm:p-8 shadow-2xl relative overflow-hidden glow-border transition-all">
+            
+            <!-- Mode Pills Header Tabs -->
+            <div class="flex items-center justify-between border-b border-white/10 pb-5 mb-6 overflow-x-auto no-scrollbar gap-3">
+                <div class="flex items-center space-x-2.5">
+                    <button class="mode-pill active px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-bold bg-gradient-to-r from-gemma-600 via-gemma-violet to-gemma-pink text-white shadow-lg shadow-gemma-600/30 flex items-center gap-2 whitespace-nowrap transition-all transform hover:scale-105" data-mode="web">
+                        <i class="fa-solid fa-globe"></i> Deep Web Search
+                    </button>
+                    <button class="mode-pill px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-semibold bg-white/5 text-slate-300 hover:bg-white/10 hover:text-white flex items-center gap-2 whitespace-nowrap transition-all border border-white/10" data-mode="doc">
+                        <i class="fa-solid fa-file-pdf text-red-400"></i> Document Reader
+                    </button>
+                    <button class="mode-pill px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-semibold bg-white/5 text-slate-300 hover:bg-white/10 hover:text-white flex items-center gap-2 whitespace-nowrap transition-all border border-white/10" data-mode="vision">
+                        <i class="fa-solid fa-eye text-emerald-400"></i> Visual Vision AI
+                    </button>
+                    <button class="mode-pill px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-semibold bg-white/5 text-slate-300 hover:bg-white/10 hover:text-white flex items-center gap-2 whitespace-nowrap transition-all border border-white/10" data-mode="deep">
+                        <i class="fa-solid fa-brain text-gemma-pink"></i> Multi-hop Synthesis
+                    </button>
+                </div>
+
+                <!-- Model Engine Dropdown Selector -->
+                <div class="flex items-center space-x-2 text-xs">
+                    <span class="text-slate-400 font-semibold hidden sm:inline"><i class="fa-solid fa-microchip text-gemma-cyan"></i> Engine:</span>
+                    <select id="modelSelector" class="bg-slate-900/90 border border-white/20 text-slate-200 rounded-xl px-3.5 py-2 text-xs font-bold focus:outline-none focus:ring-2 focus:ring-gemma-500 cursor-pointer shadow-inner">
+                        <option value="gemma4-27b" selected>Gemma 4 27B Ultra Vision (MoE)</option>
+                        <option value="gemma4-7b">Gemma 4 7B Multimodal Standard</option>
+                        <option value="gemma4-2b">Gemma 4 2B Fast On-Device</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Drag & Drop Overlay Zone -->
+            <div id="dropZone" class="relative group">
+                
+                <!-- Attachment Strip with Image Thumbnails -->
+                <div id="attachmentStrip" class="hidden flex-wrap gap-3 mb-4 p-3 bg-slate-950/60 rounded-2xl border border-white/10"></div>
+
+                <!-- Input Textarea & Floating Controls -->
+                <div class="relative rounded-2xl overflow-hidden glass-input transition-all duration-300 focus-within:ring-2 focus-within:ring-gemma-500/60 shadow-2xl">
+                    <textarea id="searchInput" rows="3" placeholder="Ask anything, attach PDF documents, drop charts/images, or request complex multi-hop analysis..." class="w-full bg-transparent pl-5 pr-36 pt-4 pb-16 text-slate-100 placeholder-slate-400 text-sm sm:text-base font-normal focus:outline-none resize-none leading-relaxed"></textarea>
+                    
+                    <!-- Voice Waveform Equalizer Visualizer -->
+                    <div id="waveformVisualizer" class="hidden absolute left-5 bottom-4 flex items-center space-x-1.5 h-7">
+                        <span class="text-xs text-red-400 font-bold mr-2 flex items-center gap-2"><i class="fa-solid fa-circle-dot animate-ping"></i> Listening Neural Audio...</span>
+                        <div class="w-1.5 bg-gradient-to-t from-red-500 to-gemma-pink rounded-full animate-wave-equalizer"></div>
+                        <div class="w-1.5 bg-gradient-to-t from-red-500 to-gemma-pink rounded-full animate-wave-equalizer" style="animation-delay: 0.2s"></div>
+                        <div class="w-1.5 bg-gradient-to-t from-red-500 to-gemma-pink rounded-full animate-wave-equalizer" style="animation-delay: 0.4s"></div>
+                        <div class="w-1.5 bg-gradient-to-t from-red-500 to-gemma-pink rounded-full animate-wave-equalizer" style="animation-delay: 0.1s"></div>
+                        <div class="w-1.5 bg-gradient-to-t from-red-500 to-gemma-pink rounded-full animate-wave-equalizer" style="animation-delay: 0.3s"></div>
+                    </div>
+
+                    <!-- Bottom Toolbars & Submit Button -->
+                    <div class="absolute left-4 bottom-3 right-4 flex items-center justify-between">
+                        
+                        <!-- Upload Actions -->
+                        <div class="flex items-center space-x-2">
+                            <label class="p-2.5 rounded-xl text-slate-400 hover:text-gemma-400 hover:bg-white/10 cursor-pointer transition-all" title="Attach Files or Images">
+                                <i class="fa-solid fa-paperclip text-lg"></i>
+                                <input type="file" id="fileInput" class="hidden" multiple accept="image/*,.pdf,.doc,.docx,.txt,.csv,.json">
+                            </label>
+                            <button onclick="triggerSampleUpload()" class="px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-slate-200 text-xs font-semibold border border-white/10 transition-all flex items-center gap-1.5 shadow-sm">
+                                <i class="fa-solid fa-file-arrow-up text-gemma-violet"></i> Sample Quantum PDF
+                            </button>
+                            <button onclick="triggerSampleImage()" class="px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-slate-200 text-xs font-semibold border border-white/10 transition-all flex items-center gap-1.5 shadow-sm">
+                                <i class="fa-solid fa-image text-emerald-400"></i> Sample Chart PNG
+                            </button>
+                        </div>
+
+                        <!-- Mic & Synthesize CTA -->
+                        <div class="flex items-center space-x-2">
+                            <button id="voiceBtn" onclick="toggleVoiceInput()" class="p-2.5 rounded-xl text-slate-400 hover:text-red-400 hover:bg-white/10 transition-all relative" title="Voice Search">
+                                <i id="voiceIcon" class="fa-solid fa-microphone text-lg"></i>
+                            </button>
+                            <button id="submitBtn" onclick="executeSearch()" class="px-6 py-3 bg-gradient-to-r from-gemma-600 via-gemma-violet to-gemma-pink hover:opacity-90 text-white font-bold text-xs sm:text-sm rounded-xl shadow-xl shadow-gemma-600/30 transition-all transform active:scale-95 flex items-center gap-2">
+                                <span>Synthesize</span>
+                                <i class="fa-solid fa-sparkles text-amber-300"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Starter Prompts -->
+            <div class="mt-5 flex items-center gap-2 overflow-x-auto no-scrollbar text-xs">
+                <span class="text-slate-400 font-bold whitespace-nowrap"><i class="fa-solid fa-bolt text-amber-400"></i> Trending Queries:</span>
+                <button onclick="setQuery('Compare quantum computing topological qubits vs superconductor qubits')" class="px-3.5 py-1.5 rounded-full bg-white/5 hover:bg-gemma-600/30 hover:text-gemma-400 border border-white/10 text-slate-300 whitespace-nowrap transition-all font-medium">Quantum Coherence Benchmark</button>
+                <button onclick="setQuery('Analyze sales growth chart image and extract quarterly profit metrics')" class="px-3.5 py-1.5 rounded-full bg-white/5 hover:bg-gemma-600/30 hover:text-gemma-400 border border-white/10 text-slate-300 whitespace-nowrap transition-all font-medium">Financial Chart Vision OCR</button>
+                <button onclick="setQuery('Explain Gemma 4 vision encoder transformer architecture')" class="px-3.5 py-1.5 rounded-full bg-white/5 hover:bg-gemma-600/30 hover:text-gemma-400 border border-white/10 text-slate-300 whitespace-nowrap transition-all font-medium">Gemma 4 Technical Breakdown</button>
+            </div>
+        </section>
+
+        <!-- Live Reasoning Chain Console -->
+        <section id="reasoningDashboard" class="hidden glass-panel rounded-2xl p-6 border border-white/10 shadow-2xl animate-fade-up">
+            <div class="flex items-center justify-between border-b border-white/10 pb-3 mb-4">
+                <div class="flex items-center space-x-3">
+                    <div class="relative flex items-center justify-center">
+                        <div class="w-3.5 h-3.5 rounded-full bg-gemma-500 animate-ping absolute"></div>
+                        <div class="w-2.5 h-2.5 rounded-full bg-gemma-400"></div>
+                    </div>
+                    <h3 class="font-extrabold text-sm text-slate-200 uppercase tracking-wider flex items-center gap-2">
+                        <i class="fa-solid fa-microchip text-gemma-violet"></i> Gemma 4 Chain-of-Thought Neural Pipeline
+                    </h3>
+                </div>
+                <button onclick="toggleReasoningDetails()" class="text-xs text-gemma-400 hover:text-gemma-300 font-semibold flex items-center gap-1.5">
+                    <span id="toggleReasoningText">Collapse Execution Log</span>
+                    <i id="toggleReasoningIcon" class="fa-solid fa-chevron-up"></i>
+                </button>
+            </div>
+
+            <div id="reasoningSteps" class="space-y-2.5 text-xs font-mono text-slate-300"></div>
+        </section>
+
+        <!-- Referenced Sources Section -->
+        <section id="sourcesSection" class="hidden space-y-3.5 animate-fade-up">
+            <div class="flex items-center justify-between">
+                <h3 class="text-xs font-extrabold uppercase tracking-widest text-slate-400 flex items-center gap-2">
+                    <i class="fa-solid fa-layer-group text-gemma-cyan"></i> Fact-Checked Web & Document Sources (<span id="sourceCount">0</span>)
+                </h3>
+            </div>
+            <div id="sourcesGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"></div>
+        </section>
+
+        <!-- Interactive Workspace Tabs -->
+        <section id="workspaceTabs" class="hidden flex items-center space-x-2 border-b border-white/10 pb-3">
+            <button onclick="switchTab('synthesis')" id="tab-synthesis" class="tab-btn px-5 py-2.5 rounded-2xl text-xs sm:text-sm font-bold bg-gradient-to-r from-gemma-600 to-gemma-violet text-white flex items-center gap-2 shadow-lg shadow-gemma-600/30">
+                <i class="fa-solid fa-sparkles text-amber-300"></i> AI Synthesis Answer
+            </button>
+            <button onclick="switchTab('graph')" id="tab-graph" class="tab-btn px-5 py-2.5 rounded-2xl text-xs sm:text-sm font-semibold bg-white/5 text-slate-400 hover:text-white flex items-center gap-2 border border-white/5">
+                <i class="fa-solid fa-diagram-project text-gemma-violet"></i> Knowledge Graph
+            </button>
+            <button onclick="switchTab('docview')" id="tab-docview" class="tab-btn px-5 py-2.5 rounded-2xl text-xs sm:text-sm font-semibold bg-white/5 text-slate-400 hover:text-white flex items-center gap-2 border border-white/5">
+                <i class="fa-solid fa-eye text-emerald-400"></i> Vision OCR & Multi-File Data
+            </button>
+            <button onclick="switchTab('rawjson')" id="tab-rawjson" class="tab-btn px-5 py-2.5 rounded-2xl text-xs sm:text-sm font-semibold bg-white/5 text-slate-400 hover:text-white flex items-center gap-2 border border-white/5">
+                <i class="fa-solid fa-code text-amber-400"></i> API Telemetry JSON
+            </button>
+        </section>
+
+        <!-- Tab 1: AI Synthesis Answer & Executive Summary Sidebar -->
+        <section id="view-synthesis" class="hidden grid grid-cols-1 lg:grid-cols-3 gap-8 animate-fade-up">
+            
+            <!-- Main Markdown Synthesis Output -->
+            <div class="lg:col-span-2 glass-panel rounded-3xl p-6 sm:p-8 space-y-6 border border-white/10 shadow-2xl">
+                
+                <div class="border-b border-white/10 pb-5">
+                    <h2 id="responseHeading" class="text-2xl sm:text-3xl font-black text-white leading-snug">--</h2>
+                    <div class="flex flex-wrap items-center gap-3 mt-3 text-xs text-slate-400 font-medium">
+                        <span id="responseModelBadge" class="px-3 py-1 rounded-lg bg-gemma-600/20 text-gemma-400 border border-gemma-600/40 font-bold">Gemma 4 27B Ultra</span>
+                        <span>•</span>
+                        <span id="responseTimeBadge"><i class="fa-regular fa-clock text-amber-400"></i> 0.62s response time</span>
+                        <span>•</span>
+                        <span class="text-emerald-400 font-semibold flex items-center gap-1.5"><i class="fa-solid fa-shield-halved"></i> Verified Ground Truth</span>
+                    </div>
+                </div>
+
+                <!-- Markdown Content with Citation Hover Popovers -->
+                <div id="markdownOutput" class="prose prose-invert max-w-none text-slate-200 text-sm sm:text-base leading-relaxed space-y-4"></div>
+
+                <!-- Toolbar Actions -->
+                <div class="pt-6 border-t border-white/10 flex flex-wrap items-center justify-between gap-4 text-xs">
+                    <div class="flex items-center space-x-2">
+                        <button onclick="copyResponseText()" class="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-200 font-semibold border border-white/10 transition-all flex items-center gap-2">
+                            <i class="fa-regular fa-copy"></i> Copy Output
+                        </button>
+                        <button onclick="exportMarkdown()" class="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-200 font-semibold border border-white/10 transition-all flex items-center gap-2">
+                            <i class="fa-solid fa-download"></i> Export Markdown
+                        </button>
+                    </div>
+
+                    <!-- Read Aloud Speech Button -->
+                    <button id="ttsPlayBtn" onclick="toggleSpeechSynthesis()" class="px-4 py-2 rounded-xl bg-gemma-violet/20 hover:bg-gemma-violet/30 text-gemma-violet font-bold border border-gemma-violet/40 transition-all flex items-center gap-2 shadow-sm">
+                        <i id="ttsIcon" class="fa-solid fa-volume-high"></i> <span id="ttsText">Read Aloud</span>
+                    </button>
+                </div>
+
+                <!-- Follow-up Prompts -->
+                <div class="pt-5 border-t border-white/10 space-y-3">
+                    <h4 class="text-xs font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
+                        <i class="fa-solid fa-wand-magic-sparkles text-gemma-pink"></i> Deep Dive Follow-up Prompts
+                    </h4>
+                    <div id="followupChips" class="flex flex-wrap gap-2.5"></div>
+                </div>
+            </div>
+
+            <!-- Key Takeaways Executive Summary -->
+            <div class="space-y-6">
+                <div class="glass-panel rounded-3xl p-6 border border-white/10 shadow-2xl space-y-4">
+                    <h3 class="text-sm font-extrabold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-lightbulb text-amber-400 text-lg"></i> Bulleted Executive Summary
+                    </h3>
+                    <ul id="keyTakeawaysList" class="space-y-3 text-xs sm:text-sm text-slate-300"></ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tab 2: Interactive Knowledge Canvas Graph -->
+        <section id="view-graph" class="hidden glass-panel rounded-3xl p-6 border border-white/10 space-y-4 animate-fade-up shadow-2xl">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="text-base font-extrabold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-diagram-project text-gemma-violet"></i> Dynamic Physics Knowledge Graph
+                    </h3>
+                    <p class="text-xs text-slate-400">Drag nodes, hover over entities, or inspect cross-domain entity relations in real-time</p>
+                </div>
+                <button onclick="resetGraphPhysics()" class="px-3.5 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-xs font-semibold text-slate-300 border border-white/10 transition-all">
+                    <i class="fa-solid fa-arrows-rotate"></i> Reset Network
+                </button>
+            </div>
+            
+            <div class="relative w-full h-[520px] rounded-2xl overflow-hidden bg-slate-950/90 border border-white/10 shadow-inner">
+                <canvas id="physicsGraphCanvas" class="w-full h-full cursor-grab active:cursor-grabbing"></canvas>
+            </div>
+        </section>
+
+        <!-- Tab 3: Document & Vision OCR Inspection -->
+        <section id="view-docview" class="hidden glass-panel rounded-3xl p-6 border border-white/10 space-y-4 animate-fade-up shadow-2xl">
+            <h3 class="text-base font-extrabold text-white flex items-center gap-2">
+                <i class="fa-solid fa-eye text-emerald-400"></i> Multimodal Document & Image OCR Data
+            </h3>
+            <div id="docAnalysisContent" class="p-6 bg-slate-950 rounded-2xl border border-white/10 text-xs font-mono text-slate-300 space-y-3">
+                <p class="text-slate-400">// No custom files attached. Upload a PDF or Chart Image in the input box to analyze multi-modal layers.</p>
+            </div>
+        </section>
+
+        <!-- Tab 4: API JSON Telemetry Stream -->
+        <section id="view-rawjson" class="hidden glass-panel rounded-3xl p-6 border border-white/10 space-y-4 animate-fade-up shadow-2xl">
+            <h3 class="text-base font-extrabold text-white flex items-center gap-2">
+                <i class="fa-solid fa-code text-amber-400"></i> Gemma 4 API Stream Telemetry Payload
+            </h3>
+            <pre id="rawJsonContent" class="p-5 bg-slate-950 rounded-2xl border border-white/10 text-xs font-mono text-emerald-400 overflow-x-auto leading-relaxed shadow-inner"></pre>
+        </section>
+
+    </main>
+
+    <!-- Slide-over Web Source Preview Drawer -->
+    <div id="previewDrawer" class="fixed inset-y-0 right-0 w-full sm:w-11/12 md:w-1/2 lg:w-2/5 glass-panel border-l border-white/10 shadow-2xl z-50 transform translate-x-full transition-transform duration-300 flex flex-col">
+        <div class="p-5 border-b border-white/10 flex items-center justify-between bg-slate-950">
+            <div class="flex items-center space-x-3">
+                <i id="previewIcon" class="fa-solid fa-globe text-gemma-cyan text-xl"></i>
+                <h3 id="previewTitle" class="font-bold text-sm sm:text-base text-white truncate max-w-[280px]">Source Preview</h3>
+            </div>
+            <button onclick="closePreviewDrawer()" class="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-white/10">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+        </div>
+        <div id="previewBody" class="p-6 overflow-y-auto flex-grow text-sm text-slate-300 space-y-4"></div>
+    </div>
+
+    <!-- Engine Settings Modal -->
+    <div id="settingsModal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+        <div class="glass-panel border border-white/10 rounded-3xl max-w-lg w-full p-7 shadow-2xl space-y-6 animate-fade-up">
+            <div class="flex items-center justify-between border-b border-white/10 pb-4">
+                <h3 class="font-black text-xl text-white flex items-center gap-2">
+                    <i class="fa-solid fa-sliders text-gemma-violet"></i> Gemma Engine Settings
+                </h3>
+                <button onclick="closeSettingsModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+            <div class="space-y-4 text-xs sm:text-sm">
+                <div>
+                    <label class="block font-bold text-slate-300 mb-1.5">Gemma 4 Local Endpoint API</label>
+                    <input type="text" value="http://localhost:8080/v1/gemma4" class="w-full px-3.5 py-2.5 bg-slate-950 border border-white/15 rounded-xl font-mono text-slate-200">
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-300 mb-1">Temperature (Creativity): <span id="tempVal" class="text-gemma-cyan">0.2</span></label>
+                    <input type="range" min="0" max="1" step="0.05" value="0.2" oninput="document.getElementById('tempVal').innerText=this.value" class="w-full accent-gemma-500">
+                </div>
+                <div class="flex items-center justify-between pt-2">
+                    <span class="font-bold text-slate-300">Fact-Check Web Grounding</span>
+                    <input type="checkbox" checked class="w-4 h-4 accent-gemma-500 rounded">
+                </div>
+            </div>
+            <div class="pt-4 border-t border-white/10 flex justify-end">
+                <button onclick="closeSettingsModal()" class="px-6 py-2.5 bg-gradient-to-r from-gemma-600 to-gemma-violet hover:opacity-90 text-white font-bold rounded-xl text-xs">Save Settings</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="border-t border-white/10 py-6 text-center text-xs text-slate-400">
+        <p>GemmaSearch Open-Source Multimodal AI Search Engine • Powered by <span class="text-gemma-400 font-bold">Google Gemma 4</span></p>
+    </footer>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        /* Application State */
+        let currentMode = 'web';
+        let attachedFiles = [];
+        let isVoiceActive = false;
+        let soundEnabled = true;
+
+        /* Canvas & Physics Nodes State */
+        let graphPhysicsNodes = [];
+        let graphPhysicsLinks = [];
+        let physicsAnimId = null;
+        let draggedNode = null;
+        let hoveredNode = null;
+
+        /* Web Audio Sound Effects Engine */
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        
+        function playSoundFx(freq = 440, type = 'sine', duration = 0.08) {
+            if (!soundEnabled) return;
+            try {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = type;
+                osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start();
+                osc.stop(audioCtx.currentTime + duration);
+            } catch(e){}
+        }
+
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            const icon = document.getElementById('soundIcon');
+            icon.className = soundEnabled ? "fa-solid fa-volume-high text-gemma-cyan" : "fa-solid fa-volume-xmark text-slate-500";
+        }
+
+        /* Multimodal Search Mock Data */
+        const mockSearchData = {
+            'quantum': {
+                title: "Quantum Computing Hardware Supremacy & Gemma 4 Multimodal Parsing",
+                sources: [
+                    { id: 1, domain: "nature.com", title: "Topological Qubit Coherence Scaling Benchmark", rating: "9.9 High Trust", snippet: "Experimental qubit coherence measurements demonstrating state lifetime scaling beyond quantum error correction thresholds.", url: "#" },
+                    { id: 2, domain: "arxiv.org", title: "Gemma 4 Reasoning on Physics Spectrograms", rating: "9.8 High Trust", snippet: "Evaluating visual transformers on automated extraction of quantum energy gaps and wave function matrices.", url: "#" },
+                    { id: 3, domain: "deepmind.google", title: "Quantum Chemistry Simulations with Gemma Models", rating: "9.6 High Trust", snippet: "Applying LLM logic solvers to accelerate crystal structure prediction by 4.8x.", url: "#" }
+                ],
+                takeaways: [
+                    "Topological qubit coherence times reached an unprecedented record with 99.92% fidelity.",
+                    "Gemma 4 27B Vision processed 120+ spectrograph charts directly from raw scientific PDFs with zero hallucination.",
+                    "Open-source deployment reduces supercomputing runtime costs for quantum chemistry simulations by over 55%."
+                ],
+                markdown: `
+### Key Findings in Quantum Computing & AI Synthesis
+
+Recent breakthroughs in **fault-tolerant qubit architectures** combined with **Gemma 4 open multimodal AI** have transformed scientific research workflows <span class="citation-tag" onclick="triggerCitation(1)">1</span>.
+
+\`\`\`python
+# Gemma 4 Quantum Spectrogram Analysis Example
+from gemma_search import Gemma4Engine
+
+engine = Gemma4Engine(model="gemma-4-27b-vision")
+results = engine.process_multimodal(
+    document="quantum_paper.pdf",
+    image="qubit_coherence_chart.png",
+    prompt="Extract T1 relaxation times and gate error margins."
+)
+print(f"Extracted T1 Time: {results.metrics['T1']} us")
+\`\`\`
+
+#### Key Scientific Highlights
+1. **Error Mitigation:** Error rates dropped below $10^{-5}$ threshold <span class="citation-tag" onclick="triggerCitation(2)">2</span>.
+2. **Vision OCR Verification:** Gemma 4 verified formulas directly from 14 published spectrographs <span class="citation-tag" onclick="triggerCitation(3)">3</span>.
+                `,
+                graph: {
+                    nodes: [
+                        { id: "Quantum Supremacy", group: 1, val: 22 },
+                        { id: "Gemma 4 27B", group: 2, val: 20 },
+                        { id: "Topological Qubits", group: 1, val: 15 },
+                        { id: "Vision OCR", group: 2, val: 14 },
+                        { id: "Fault Tolerance", group: 3, val: 12 }
+                    ],
+                    links: [
+                        { source: "Quantum Supremacy", target: "Topological Qubits" },
+                        { source: "Quantum Supremacy", target: "Fault Tolerance" },
+                        { source: "Gemma 4 27B", target: "Vision OCR" },
+                        { source: "Gemma 4 27B", target: "Quantum Supremacy" }
+                    ]
+                },
+                followups: [
+                    "Compare topological qubits against superconducting transmons.",
+                    "How does Gemma 4 handle mathematical LaTeX parsing?",
+                    "Download complete Python script for scientific OCR."
+                ]
+            },
+            'default': {
+                title: "Multimodal AI Search & Knowledge Synthesis",
+                sources: [
+                    { id: 1, domain: "github.com", title: "Gemma 4 Engine Open Source Repository", rating: "9.9 High Trust", snippet: "Official DeepMind Gemma 4 open model weights, vision encoders, and fine-tuning scripts.", url: "#" },
+                    { id: 2, domain: "ai.google", title: "Gemma 4 Technical Architecture Overview", rating: "9.7 High Trust", snippet: "Detailed benchmarks on visual reasoning, document QA, and lightweight edge deployment.", url: "#" }
+                ],
+                takeaways: [
+                    "Gemma 4 provides state-of-the-art visual understanding and reasoning in open weights.",
+                    "Fully supports document OCR, financial chart reading, and dynamic knowledge graph generation.",
+                    "Optimized for low VRAM consumption and high token throughput."
+                ],
+                markdown: `
+### Multimodal AI Capabilities Overview
+
+**Gemma 4** delivers unprecedented open multimodal intelligence <span class="citation-tag" onclick="triggerCitation(1)">1</span>. Whether analyzing high-resolution image diagrams, parsing complex financial spreadsheets, or summarizing web sources in real time, Gemma 4 provides verifiable results <span class="citation-tag" onclick="triggerCitation(2)">2</span>.
+
+#### Architecture Highlights:
+* **Native Vision Processing:** Direct encoder integration for images and PDFs.
+* **Mixture-of-Experts (MoE):** High accuracy with low compute overhead.
+* **Open Weights:** Full privacy control for local or enterprise deployment.
+                `,
+                graph: {
+                    nodes: [
+                        { id: "GemmaSearch Hub", group: 1, val: 22 },
+                        { id: "Gemma 4 Engine", group: 1, val: 20 },
+                        { id: "Web Index", group: 2, val: 14 },
+                        { id: "Document QA", group: 2, val: 14 },
+                        { id: "Vision Transformer", group: 3, val: 16 }
+                    ],
+                    links: [
+                        { source: "GemmaSearch Hub", target: "Gemma 4 Engine" },
+                        { source: "Gemma 4 Engine", target: "Web Index" },
+                        { source: "Gemma 4 Engine", target: "Document QA" },
+                        { source: "Gemma 4 Engine", target: "Vision Transformer" }
+                    ]
+                },
+                followups: [
+                    "How do I run Gemma 4 locally with Ollama or vLLM?",
+                    "Show benchmarks for visual document understanding.",
+                    "Explain the FlashAttention-3 performance gains."
+                ]
+            }
+        };
+
+        /* Initialization */
+        window.addEventListener('load', () => {
+            initAmbientCanvas();
+            initDragAndDrop();
+        });
+
+        /* Particle Canvas Background */
+        function initAmbientCanvas() {
+            const canvas = document.getElementById('ambientBgCanvas');
+            const ctx = canvas.getContext('2d');
+            let w = canvas.width = window.innerWidth;
+            let h = canvas.height = window.innerHeight;
+
+            const particles = Array.from({ length: 35 }, () => ({
+                x: Math.random() * w,
+                y: Math.random() * h,
+                r: Math.random() * 2.5 + 1,
+                dx: (Math.random() - 0.5) * 0.4,
+                dy: (Math.random() - 0.5) * 0.4
+            }));
+
+            function draw() {
+                ctx.clearRect(0, 0, w, h);
+                ctx.fillStyle = 'rgba(165, 180, 252, 0.25)';
+                particles.forEach(p => {
+                    p.x += p.dx;
+                    p.y += p.dy;
+                    if (p.x < 0 || p.x > w) p.dx *= -1;
+                    if (p.y < 0 || p.y > h) p.dy *= -1;
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+                    ctx.fill();
+                });
+                requestAnimationFrame(draw);
+            }
+            draw();
+
+            window.addEventListener('resize', () => {
+                w = canvas.width = window.innerWidth;
+                h = canvas.height = window.innerHeight;
+            });
+        }
+
+        /* Mode Selection Buttons */
+        document.querySelectorAll('.mode-pill').forEach(btn => {
+            btn.addEventListener('click', () => {
+                playSoundFx(600, 'sine', 0.05);
+                document.querySelectorAll('.mode-pill').forEach(b => {
+                    b.classList.remove('bg-gradient-to-r', 'from-gemma-600', 'via-gemma-violet', 'to-gemma-pink', 'text-white', 'shadow-lg');
+                    b.classList.add('bg-white/5', 'text-slate-300');
+                });
+                btn.classList.remove('bg-white/5', 'text-slate-300');
+                btn.classList.add('bg-gradient-to-r', 'from-gemma-600', 'via-gemma-violet', 'to-gemma-pink', 'text-white', 'shadow-lg');
+                currentMode = btn.getAttribute('data-mode');
+            });
+        });
+
+        /* Drag & Drop File System */
+        function initDragAndDrop() {
+            const dropZone = document.getElementById('dropZone');
+            const fileInput = document.getElementById('fileInput');
+
+            ['dragenter', 'dragover'].forEach(eventName => {
+                dropZone.addEventListener(eventName, (e) => {
+                    e.preventDefault();
+                    dropZone.classList.add('scale-[1.01]');
+                });
+            });
+
+            ['dragleave', 'drop'].forEach(eventName => {
+                dropZone.addEventListener(eventName, (e) => {
+                    e.preventDefault();
+                    dropZone.classList.remove('scale-[1.01]');
+                });
+            });
+
+            dropZone.addEventListener('drop', (e) => {
+                handleFiles(e.dataTransfer.files);
+            });
+
+            fileInput.addEventListener('change', (e) => {
+                handleFiles(e.target.files);
+            });
+        }
+
+        function handleFiles(files) {
+            Array.from(files).forEach(file => {
+                attachedFiles.push(file);
+                renderAttachmentStrip(file);
+            });
+            playSoundFx(800, 'triangle', 0.1);
+        }
+
+        function renderAttachmentStrip(file) {
+            const strip = document.getElementById('attachmentStrip');
+            strip.classList.remove('hidden');
+            strip.classList.add('flex');
+
+            const isImg = file.type.startsWith('image/') || file.name.endsWith('.png') || file.name.endsWith('.jpg');
+            
+            const chip = document.createElement('div');
+            chip.className = "flex items-center space-x-2.5 bg-slate-900 border border-white/20 p-1.5 pr-3 rounded-2xl text-xs font-semibold text-slate-200 shadow-md animate-fade-up";
+            
+            if (isImg && file instanceof File) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    chip.innerHTML = `
+                        <img src="${e.target.result}" class="w-8 h-8 rounded-xl object-cover border border-white/20">
+                        <span class="truncate max-w-[130px]">${file.name}</span>
+                        <button onclick="removeFile('${file.name}', this)" class="text-slate-400 hover:text-red-400 ml-1"><i class="fa-solid fa-xmark"></i></button>
+                    `;
+                };
+                reader.readAsDataURL(file);
+            } else {
+                const icon = isImg ? 'fa-image text-emerald-400' : 'fa-file-pdf text-red-400';
+                chip.innerHTML = `
+                    <div class="w-8 h-8 rounded-xl bg-white/10 flex items-center justify-center">
+                        <i class="fa-solid ${icon} text-sm"></i>
+                    </div>
+                    <span class="truncate max-w-[130px]">${file.name}</span>
+                    <button onclick="removeFile('${file.name}', this)" class="text-slate-400 hover:text-red-400 ml-1"><i class="fa-solid fa-xmark"></i></button>
+                `;
+            }
+            strip.appendChild(chip);
+        }
+
+        function removeFile(fileName, btn) {
+            attachedFiles = attachedFiles.filter(f => f.name !== fileName);
+            btn.parentElement.remove();
+            if (attachedFiles.length === 0) {
+                document.getElementById('attachmentStrip').classList.add('hidden');
+            }
+        }
+
+        function triggerSampleUpload() {
+            const sampleFile = { name: 'Quantum_Coherence.pdf', size: 2450000, type: 'application/pdf' };
+            attachedFiles.push(sampleFile);
+            renderAttachmentStrip(sampleFile);
+        }
+
+        function triggerSampleImage() {
+            const sampleImg = { name: 'Qubit_Chart.png', size: 1200000, type: 'image/png' };
+            attachedFiles.push(sampleImg);
+            renderAttachmentStrip(sampleImg);
+        }
+
+        /* Voice Input Equalizer Handler */
+        function toggleVoiceInput() {
+            const voiceBtn = document.getElementById('voiceBtn');
+            const voiceIcon = document.getElementById('voiceIcon');
+            const waveform = document.getElementById('waveformVisualizer');
+
+            if (!isVoiceActive) {
+                isVoiceActive = true;
+                voiceBtn.classList.add('text-red-400');
+                voiceIcon.className = 'fa-solid fa-microphone-lines text-red-400';
+                waveform.classList.remove('hidden');
+                playSoundFx(520, 'sine', 0.15);
+            } else {
+                isVoiceActive = false;
+                voiceBtn.classList.remove('text-red-400');
+                voiceIcon.className = 'fa-solid fa-microphone';
+                waveform.classList.add('hidden');
+                document.getElementById('searchInput').value = "Compare quantum computing topological qubits vs superconductor qubits";
+                playSoundFx(440, 'sine', 0.1);
+            }
+        }
+
+        function setQuery(text) {
+            document.getElementById('searchInput').value = text;
+            document.getElementById('searchInput').focus();
+            playSoundFx(700, 'sine', 0.05);
+        }
+
+        /* Search Processing Trigger */
+        function executeSearch() {
+            const query = document.getElementById('searchInput').value.trim();
+            if (!query && attachedFiles.length === 0) return;
+
+            playSoundFx(900, 'triangle', 0.1);
+
+            const reasoningDash = document.getElementById('reasoningDashboard');
+            reasoningDash.classList.remove('hidden');
+
+            document.getElementById('sourcesSection').classList.add('hidden');
+            document.getElementById('workspaceTabs').classList.add('hidden');
+            document.getElementById('view-synthesis').classList.add('hidden');
+            document.getElementById('view-graph').classList.add('hidden');
+            document.getElementById('view-docview').classList.add('hidden');
+            document.getElementById('view-rawjson').classList.add('hidden');
+
+            const dataKey = query.toLowerCase().includes('quantum') ? 'quantum' : 'default';
+            const data = mockSearchData[dataKey];
+
+            simulateReasoningPipeline(query, data);
+        }
+
+        /* AI Reasoning Pipeline Animation */
+        function simulateReasoningPipeline(query, data) {
+            const container = document.getElementById('reasoningSteps');
+            container.innerHTML = '';
+
+            const logs = [
+                { icon: "fa-magnifying-glass text-gemma-cyan", text: "Phase 1: Query Decomposition & Token Analysis..." },
+                { icon: "fa-globe text-gemma-400", text: "Phase 2: Deep Web Indexing - Fact-checking 3 academic repositories..." },
+                { icon: "fa-eye text-emerald-400", text: `Phase 3: Multimodal Extraction - Vectorizing ${attachedFiles.length} attached assets...` },
+                { icon: "fa-brain text-gemma-pink", text: "Phase 4: Knowledge Synthesis - Executing Gemma 4 FlashAttention-3 MoE Solver..." }
+            ];
+
+            logs.forEach((log, i) => {
+                setTimeout(() => {
+                    const line = document.createElement('div');
+                    line.className = "flex items-center space-x-2.5 animate-fade-up";
+                    line.innerHTML = `<i class="fa-solid ${log.icon}"></i> <span>${log.text}</span>`;
+                    container.appendChild(line);
+                    playSoundFx(500 + (i * 150), 'sine', 0.05);
+                }, i * 450);
+            });
+
+            setTimeout(() => {
+                renderResults(query, data);
+            }, 2000);
+        }
+
+        /* Output View Renderer */
+        function renderResults(query, data) {
+            document.getElementById('sourcesSection').classList.remove('hidden');
+            document.getElementById('workspaceTabs').classList.remove('hidden');
+            document.getElementById('view-synthesis').classList.remove('hidden');
+
+            // Source Grid Cards
+            const sourcesGrid = document.getElementById('sourcesGrid');
+            sourcesGrid.innerHTML = '';
+            document.getElementById('sourceCount').innerText = data.sources.length;
+
+            data.sources.forEach(src => {
+                const card = document.createElement('div');
+                card.className = "glass-panel rounded-2xl p-4.5 border border-white/10 hover:border-gemma-500/60 transition-all cursor-pointer flex flex-col justify-between group shadow-lg";
+                card.onclick = () => openSourcePreview(src.title, src.snippet, src.domain);
+                card.innerHTML = `
+                    <div>
+                        <div class="flex items-center justify-between text-xs mb-2.5">
+                            <span class="font-bold text-gemma-cyan flex items-center gap-1.5">
+                                <i class="fa-solid fa-globe text-[11px]"></i> ${src.domain}
+                            </span>
+                            <span class="text-[10px] bg-white/10 text-slate-200 px-2.5 py-0.5 rounded-full font-bold">${src.rating}</span>
+                        </div>
+                        <h4 class="font-black text-xs sm:text-sm text-white line-clamp-2 mb-2 group-hover:text-gemma-400 transition-colors">${src.title}</h4>
+                        <p class="text-xs text-slate-400 line-clamp-2 leading-relaxed">${src.snippet}</p>
+                    </div>
+                    <div class="mt-4 text-[11px] text-gemma-400 font-bold flex items-center justify-end gap-1">
+                        Inspect Source <i class="fa-solid fa-arrow-right text-[10px] group-hover:translate-x-1 transition-transform"></i>
+                    </div>
+                `;
+                sourcesGrid.appendChild(card);
+            });
+
+            document.getElementById('responseHeading').innerText = query || data.title;
+
+            // Typewriter Stream Effect
+            const outputArea = document.getElementById('markdownOutput');
+            outputArea.innerHTML = '';
+            let fullText = data.markdown;
+            let currentIdx = 0;
+
+            const typewriterInterval = setInterval(() => {
+                if (currentIdx < fullText.length) {
+                    outputArea.innerHTML = fullText.slice(0, currentIdx) + '<span class="inline-block w-2 h-4 bg-gemma-400 animate-pulse ml-0.5"></span>';
+                    currentIdx += 10;
+                    if (currentIdx % 40 === 0) playSoundFx(1200, 'sine', 0.02);
+                } else {
+                    outputArea.innerHTML = fullText;
+                    clearInterval(typewriterInterval);
+                    playSoundFx(1000, 'sine', 0.15);
+                }
+            }, 15);
+
+            // Key Takeaways
+            const takeawaysList = document.getElementById('keyTakeawaysList');
+            takeawaysList.innerHTML = '';
+            data.takeaways.forEach(item => {
+                const li = document.createElement('li');
+                li.className = "flex items-start gap-3";
+                li.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-400 mt-1 text-sm"></i> <span class="leading-relaxed font-medium">${item}</span>`;
+                takeawaysList.appendChild(li);
+            });
+
+            // Follow-up Prompt Chips
+            const followupChips = document.getElementById('followupChips');
+            followupChips.innerHTML = '';
+            data.followups.forEach(q => {
+                const btn = document.createElement('button');
+                btn.className = "px-4 py-2 rounded-2xl text-xs bg-white/5 hover:bg-gemma-600/30 hover:text-white border border-white/10 text-slate-200 font-semibold transition-all text-left flex items-center gap-2 transform hover:scale-[1.02] shadow-sm";
+                btn.innerHTML = `<i class="fa-solid fa-sparkles text-gemma-pink text-xs"></i> ${q}`;
+                btn.onclick = () => {
+                    setQuery(q);
+                    executeSearch();
+                };
+                followupChips.appendChild(btn);
+            });
+
+            // Telemetry
+            document.getElementById('rawJsonContent').innerText = JSON.stringify({
+                model: "gemma-4-27b-vision",
+                latency_ms: 620,
+                tokens_generated: 480,
+                confidence_score: 0.992,
+                fact_check_sources: data.sources,
+                pipeline: ["Query Decomposition", "Web Grounding", "OCR Vision", "MoE FlashAttention-3"]
+            }, null, 2);
+
+            if (attachedFiles.length > 0) {
+                document.getElementById('docAnalysisContent').innerHTML = attachedFiles.map(f => `
+                    <div class="p-4 bg-slate-900 rounded-xl border border-white/10 mb-2">
+                        <div class="font-bold text-gemma-cyan">${f.name}</div>
+                        <div class="text-slate-400 mt-1">Status: Parsed • Multimodal Vector Dimension: 1536</div>
+                    </div>
+                `).join('');
+            }
+
+            initPhysicsGraph(data.graph);
+        }
+
+        /* Citation Tooltip Click Handler */
+        function triggerCitation(sourceId) {
+            playSoundFx(800, 'sine', 0.08);
+            openSourcePreview(`Referenced Source #${sourceId}`, `Verified ground truth context excerpt matching citation reference #${sourceId}. Verified by Gemma 4 grounding validation pipeline.`, `academic-source-${sourceId}.org`);
+        }
+
+        /* Workspace Tab Switcher */
+        function switchTab(tabName) {
+            playSoundFx(700, 'sine', 0.05);
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('bg-gradient-to-r', 'from-gemma-600', 'to-gemma-violet', 'text-white', 'shadow-lg');
+                btn.classList.add('bg-white/5', 'text-slate-400');
+            });
+
+            const activeBtn = document.getElementById(`tab-${tabName}`);
+            activeBtn.classList.remove('bg-white/5', 'text-slate-400');
+            activeBtn.classList.add('bg-gradient-to-r', 'from-gemma-600', 'to-gemma-violet', 'text-white', 'shadow-lg');
+
+            ['synthesis', 'graph', 'docview', 'rawjson'].forEach(view => {
+                document.getElementById(`view-${view}`).classList.add('hidden');
+            });
+
+            document.getElementById(`view-${tabName}`).classList.remove('hidden');
+        }
+
+        /* Interactive Canvas Physics Graph */
+        function initPhysicsGraph(graphData) {
+            const canvas = document.getElementById('physicsGraphCanvas');
+            const ctx = canvas.getContext('2d');
+            const rect = canvas.parentElement.getBoundingClientRect();
+            canvas.width = rect.width;
+            canvas.height = rect.height;
+
+            graphPhysicsNodes = graphData.nodes.map((n, i) => ({
+                ...n,
+                x: Math.random() * (canvas.width - 120) + 60,
+                y: Math.random() * (canvas.height - 120) + 60,
+                vx: (Math.random() - 0.5) * 1.2,
+                vy: (Math.random() - 0.5) * 1.2
+            }));
+
+            graphPhysicsLinks = graphData.links.map(l => ({
+                source: graphPhysicsNodes.find(n => n.id === l.source),
+                target: graphPhysicsNodes.find(n => n.id === l.target)
+            }));
+
+            if (physicsAnimId) cancelAnimationFrame(physicsAnimId);
+
+            // Drag Mechanics
+            canvas.onmousedown = (e) => {
+                const mouseX = e.clientX - rect.left;
+                const mouseY = e.clientY - rect.top;
+                draggedNode = graphPhysicsNodes.find(n => Math.hypot(n.x - mouseX, n.y - mouseY) < (n.val || 15) + 5);
+            };
+
+            canvas.onmousemove = (e) => {
+                const mouseX = e.clientX - rect.left;
+                const mouseY = e.clientY - rect.top;
+                hoveredNode = graphPhysicsNodes.find(n => Math.hypot(n.x - mouseX, n.y - mouseY) < (n.val || 15) + 5);
+                if (draggedNode) {
+                    draggedNode.x = mouseX;
+                    draggedNode.y = mouseY;
+                }
+            };
+
+            window.onmouseup = () => draggedNode = null;
+
+            function updatePhysics() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                // Draw Connectors
+                graphPhysicsLinks.forEach(link => {
+                    if (link.source && link.target) {
+                        const isHighlighted = hoveredNode && (hoveredNode === link.source || hoveredNode === link.target);
+                        ctx.strokeStyle = isHighlighted ? '#22d3ee' : 'rgba(192, 132, 252, 0.35)';
+                        ctx.lineWidth = isHighlighted ? 3 : 1.5;
+                        ctx.beginPath();
+                        ctx.moveTo(link.source.x, link.source.y);
+                        ctx.lineTo(link.target.x, link.target.y);
+                        ctx.stroke();
+                    }
+                });
+
+                // Nodes
+                graphPhysicsNodes.forEach(node => {
+                    if (node !== draggedNode) {
+                        node.x += node.vx;
+                        node.y += node.vy;
+                        if (node.x < 35 || node.x > canvas.width - 35) node.vx *= -1;
+                        if (node.y < 35 || node.y > canvas.height - 35) node.vy *= -1;
+                    }
+
+                    const isHovered = hoveredNode === node;
+                    const radius = (node.val || 14) + (isHovered ? 4 : 0);
+
+                    // Glowing Ring
+                    ctx.shadowBlur = isHovered ? 20 : 12;
+                    ctx.shadowColor = node.group === 1 ? '#6366f1' : node.group === 2 ? '#c084fc' : '#34d399';
+
+                    ctx.beginPath();
+                    ctx.arc(node.x, node.y, radius, 0, Math.PI * 2);
+                    ctx.fillStyle = node.group === 1 ? '#6366f1' : node.group === 2 ? '#c084fc' : '#34d399';
+                    ctx.fill();
+
+                    ctx.shadowBlur = 0;
+
+                    // Labels
+                    ctx.fillStyle = '#ffffff';
+                    ctx.font = `${isHovered ? '800 13px' : '600 11px'} Outfit, sans-serif`;
+                    ctx.textAlign = 'center';
+                    ctx.fillText(node.id, node.x, node.y + radius + 16);
+                });
+
+                physicsAnimId = requestAnimationFrame(updatePhysics);
+            }
+
+            updatePhysics();
+        }
+
+        function resetGraphPhysics() {
+            const query = document.getElementById('searchInput').value.trim();
+            const dataKey = query.toLowerCase().includes('quantum') ? 'quantum' : 'default';
+            initPhysicsGraph(mockSearchData[dataKey].graph);
+        }
+
+        /* Source Preview Slide Drawer */
+        function openSourcePreview(title, snippet, domain) {
+            const drawer = document.getElementById('previewDrawer');
+            document.getElementById('previewTitle').innerText = title;
+            document.getElementById('previewBody').innerHTML = `
+                <div class="space-y-4">
+                    <div class="p-3.5 bg-slate-900 rounded-xl text-xs flex items-center justify-between border border-white/10">
+                        <span class="font-bold text-gemma-cyan"><i class="fa-solid fa-globe"></i> ${domain}</span>
+                        <span class="text-emerald-400 font-bold">Ground Truth Verified</span>
+                    </div>
+                    <h4 class="font-extrabold text-base text-white">${title}</h4>
+                    <p class="leading-relaxed text-slate-300 text-sm">${snippet}</p>
+                    <p class="text-xs text-slate-400 border-t border-white/10 pt-3">Indexed and extracted using Gemma 4 multimodal OCR web crawler.</p>
+                </div>
+            `;
+            drawer.classList.remove('translate-x-full');
+        }
+
+        function closePreviewDrawer() {
+            document.getElementById('previewDrawer').classList.add('translate-x-full');
+        }
+
+        function openSettingsModal() { document.getElementById('settingsModal').classList.remove('hidden'); }
+        function closeSettingsModal() { document.getElementById('settingsModal').classList.add('hidden'); }
+        function openLibraryModal() { alert("Knowledge Base Library - Saved threads and index entries loaded."); }
+
+        function copyResponseText() {
+            const text = document.getElementById('markdownOutput').innerText;
+            navigator.clipboard ? navigator.clipboard.writeText(text) : document.execCommand('copy');
+            alert("Summary copied to clipboard!");
+        }
+
+        function exportMarkdown() {
+            const text = document.getElementById('markdownOutput').innerText;
+            const blob = new Blob([text], { type: 'text/markdown' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'GemmaSearch-Synthesis.md';
+            a.click();
+        }
+
+        /* Read Aloud TTS */
+        function toggleSpeechSynthesis() {
+            const ttsIcon = document.getElementById('ttsIcon');
+            const ttsText = document.getElementById('ttsText');
+
+            if ('speechSynthesis' in window) {
+                if (window.speechSynthesis.speaking) {
+                    window.speechSynthesis.cancel();
+                    ttsIcon.className = "fa-solid fa-volume-high";
+                    ttsText.innerText = "Read Aloud";
+                } else {
+                    const text = document.getElementById('markdownOutput').innerText;
+                    const utterance = new SpeechSynthesisUtterance(text);
+                    utterance.onend = () => {
+                        ttsIcon.className = "fa-solid fa-volume-high";
+                        ttsText.innerText = "Read Aloud";
+                    };
+                    window.speechSynthesis.speak(utterance);
+                    ttsIcon.className = "fa-solid fa-pause text-red-400 animate-pulse";
+                    ttsText.innerText = "Pause";
+                }
+            }
+        }
+
+        function toggleReasoningDetails() {
+            const steps = document.getElementById('reasoningSteps');
+            const text = document.getElementById('toggleReasoningText');
+            const icon = document.getElementById('toggleReasoningIcon');
+
+            if (steps.classList.contains('hidden')) {
+                steps.classList.remove('hidden');
+                text.innerText = "Collapse Execution Log";
+                icon.className = "fa-solid fa-chevron-up";
+            } else {
+                steps.classList.add('hidden');
+                text.innerText = "Expand Execution Log";
+                icon.className = "fa-solid fa-chevron-down";
+            }
+        }
+
+        /* Dark/Light Theme Toggle */
+        document.getElementById('themeToggleBtn').addEventListener('click', () => {
+            const html = document.documentElement;
+            const icon = document.getElementById('themeIcon');
+            if (html.classList.contains('dark')) {
+                html.classList.remove('dark');
+                html.classList.add('light');
+                icon.className = "fa-solid fa-sun text-amber-400";
+            } else {
+                html.classList.remove('light');
+                html.classList.add('dark');
+                icon.className = "fa-solid fa-moon text-amber-300";
+            }
+        });
+    </script>
+</body>
+</html>
